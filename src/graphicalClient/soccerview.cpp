@@ -283,6 +283,8 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
   drawFieldLines(fieldDim);
   drawRobots();
   drawBalls();
+  drawDebugLines();
+  drawDebugCircles();
   //vectorTextTest();
   glPopMatrix();
   swapBuffers();
@@ -441,6 +443,116 @@ void GLSoccerView::drawRobot(vector2d loc, double theta, double conf, int robotI
   glPopMatrix();
 }
 
+// local function for gradient calculation
+QColor getHeatMapColor(float value)
+{
+  float red, green, blue;
+  float color[][3] = { {0,0,1}, {0,1,0}, {1,1,0}, {1,0,0} };
+  const int NUM_COLORS = sizeof(color)/sizeof(float[3]);
+    // A static array of 4 colors:  (blue,   green,  yellow,  red) using {r,g,b} for each.
+ 
+  int idx1;        // |-- Our desired color will be between these two indexes in "color".
+  int idx2;        // |
+  float fractBetween = 0;  // Fraction between "idx1" and "idx2" where our value is.
+ 
+  if(value <= 0)      {  idx1 = idx2 = 0;            }    // accounts for an input <=0
+  else if(value >= 1)  {  idx1 = idx2 = NUM_COLORS-1; }    // accounts for an input >=0
+  else
+  {
+    value = value * (NUM_COLORS-1);        // Will multiply value by 3.
+    idx1  = floor(value);                  // Our desired color will be after this index.
+    idx2  = idx1+1;                        // ... and before this index (inclusive).
+    fractBetween = value - float(idx1);    // Distance between the two indexes (0-1).
+  }
+ 
+  red   = (color[idx2][0] - color[idx1][0])*fractBetween + color[idx1][0];
+  green = (color[idx2][1] - color[idx1][1])*fractBetween + color[idx1][1];
+  blue  = (color[idx2][2] - color[idx1][2])*fractBetween + color[idx1][2];
+  return QColor(red*255, green*255, blue*255);
+}
+// local function for drawing line
+void drawLine (const double pos1[3], const double pos2[3], const double lw, float color)
+{
+    QColor c(getHeatMapColor(color));
+    printf("color (line) = %f, %f, %f\n", c.redF(), c.greenF(), c.blueF());
+    glDisable (GL_LIGHTING);
+    glColor3f(c.redF(), c.greenF(), c.blueF());
+    glLineWidth(lw);
+    glBegin(GL_LINES);
+    glVertex3f( pos1[0]     ,  pos1[1]     , pos1[2]);
+    glVertex3f( pos2[0]     ,  pos2[1]     , pos2[2]);
+    glEnd();
+    glColor3f(1,1,1);
+    glEnable(GL_LIGHTING);
+}
+
+void GLSoccerView::drawDebugLines() {
+  double epsilon = 1e-3;
+  for (map<string, vector<Debug_Line> >::iterator it = debugLines.begin(); it != debugLines.end(); it++) {
+        vector<Debug_Line> &lines = it->second;
+        double pos1[3], pos2[3];
+        pos1[2] = epsilon;
+        pos2[2] = epsilon;
+        for (int j = 0; j < lines.size(); ++j)
+        {
+            pos1[0] = lines[j].x1()/(1.);
+            pos1[1] = lines[j].y1()/(1.);
+            pos2[0] = lines[j].x2()/(1.);
+            pos2[1] = lines[j].y2()/(1.);
+            drawLine(pos1, pos2, 4, lines[j].color());
+        }
+    }
+
+    
+}
+
+void drawHollowCircle(double x0,double y0,double z0,double r, float color)
+{
+    QColor c(getHeatMapColor(color));
+    printf("color (circle) = %f, %f, %f, value = %f\n", c.redF(), c.greenF(), c.blueF(), color);
+
+    glDisable(GL_LIGHTING);
+    glColor3f(c.redF(), c.greenF(), c.blueF());
+    glLineWidth(2);
+   
+    int i;
+    double tmp,ny,nz,a,ca,sa;
+    const int n = 24;   // number of sides to the cylinder (divisible by 4)
+
+    a = double(M_PI*2.0)/double(n);
+    sa = (double) sin(a);
+    ca = (double) cos(a);
+
+    // draw top cap
+    glShadeModel (GL_FLAT);
+    ny=1; nz=0;       // normal vector = (0,ny,nz)
+    glBegin (GL_LINE_LOOP);
+    for (i=0; i<=n; i++) {
+        glVertex3d (ny*r+x0,nz*r+y0,z0);
+        // rotate ny,nz
+        tmp = ca*ny - sa*nz;
+        nz = sa*ny + ca*nz;
+        ny = tmp;
+    }
+    glEnd();
+    glColor3f(1,1,1);
+    glEnable(GL_LIGHTING);
+}
+void GLSoccerView::drawDebugCircles() {
+  // circles
+  double epsilon = 1e-3;
+  for (map<string, vector<Debug_Circle> >:: iterator it = debugCircles.begin(); it!= debugCircles.end(); it++) {
+      vector<Debug_Circle> &circles = it->second;
+      for (int j = 0; j < circles.size(); ++j)
+      {
+          drawHollowCircle(circles[j].x()/(1.), 
+                           circles[j].y()/(1.),
+                           epsilon,
+                           circles[j].radius()/(1.),
+                           circles[j].color());
+      }
+  }
+}
 void GLSoccerView::drawFieldLines(FieldDimensions& dimensions)
 {
   glColor4f(FIELD_LINES_COLOR);
@@ -493,6 +605,38 @@ void GLSoccerView::drawRobots()
       drawRobot(r.loc,r.angle,r.conf,r.id,r.team,r.hasAngle);
     }
   }
+}
+void GLSoccerView::updateDebugData(const sslDebug_Data &ddata) {
+  sslDebug_Data d = ddata;
+  string id = d.id();
+  graphicsMutex.lock();
+  debugLines[id] = vector<Debug_Line>();
+  debugCircles[id] = vector<Debug_Circle>();
+  for (int i = 0; i < d.line_size(); ++i)
+  {
+      debugLines[id].push_back(d.line(i));
+  }
+  for (int i = 0; i < d.circle_size(); ++i)
+  {
+      debugCircles[id].push_back(d.circle(i));
+  }
+  graphicsMutex.unlock();
+  postRedraw();
+  // for (map<string, vector<Debug_Line> >::iterator it = debugLines.begin(): it != debugLines.end(); it++) {
+  //     vector<Debug_Line> &lines = it->second;
+  //     for (int j = 0; j < lines.size(); ++j)
+  //     {
+  //         g->debugger.addLine()
+  //     }
+
+  // }
+  // for(int i=0; i<d.circle_size(); ++i) {
+  //     g->debugger.addCircle(d.circle(i).x(), d.circle(i).y(), d.circle(i).radius());
+  // }
+  // for(int i=0; i<d.line_size(); ++i) {
+  //     g->debugger.addLine(d.line(i).x1(),d.line(i).y1(), d.line(i).x2(), d.line(i).y2());
+  // }
+  
 }
 
 void GLSoccerView::updateDetection(const SSL_DetectionFrame& detection)

@@ -428,7 +428,7 @@ void TeamDetector::findRobotsByModel(::google::protobuf::RepeatedPtrField< ::SSL
   SSL_DetectionRobot * robot=0;
 
   MultiPatternModel::PatternDetectionResult res;
-
+  // printf("finding robots...\n");
   while((reg = filter_team.getNext()) != 0) {
     vector2d reg_img_center(reg->cen_x,reg->cen_y);
     vector3d reg_center3d;
@@ -436,6 +436,7 @@ void TeamDetector::findRobotsByModel(::google::protobuf::RepeatedPtrField< ::SSL
     vector2d reg_center(reg_center3d.x,reg_center3d.y);
     //TODO add masking:
     //if(det.mask.get(reg->cen_x,reg->cen_y) >= 0.5){
+    // printf("if in field:\n");
     if (field_filter.isInFieldOrPlayableBoundary(reg_center)) {
       cen.set(reg,reg_center3d,getRegionArea(reg,_robot_height));
       int num_markers = 0;
@@ -464,19 +465,19 @@ void TeamDetector::findRobotsByModel(::google::protobuf::RepeatedPtrField< ::SSL
         }
       }
       reg_tree.endQuery();
-
+      // printf("num markers = %d\n", num_markers);
       if(num_markers >= 2){
         CMPattern::PatternProcessing::sortMarkersByAngle(markers,num_markers);
         for(int i=0; i<num_markers; i++){
-          /*DEBUG CODE:
-          char colorchar='?';
-          if (markers[i].id==color_id_green) colorchar='g';
-          if (markers[i].id==color_id_pink) colorchar='p';
-          if (markers[i].id==color_id_white) colorchar='w';
-          if (markers[i].id==color_id_team) colorchar='t';
-          if (markers[i].id==color_id_field_green) colorchar='f';
-          if (markers[i].id==color_id_cyan) colorchar='c';
-          printf("%c ",colorchar);*/
+          // DEBUG CODE:
+          // char colorchar='?';
+          // if (markers[i].id==color_id_green) colorchar='g';
+          // if (markers[i].id==color_id_pink) colorchar='p';
+          // if (markers[i].id==color_id_white) colorchar='w';
+          // if (markers[i].id==color_id_team) colorchar='t';
+          // if (markers[i].id==color_id_field_green) colorchar='f';
+          // if (markers[i].id==color_id_cyan) colorchar='c';
+          // printf("%c ",colorchar);
           int j = (i + 1) % num_markers;
           markers[i].next_dist = dist(markers[i].loc,markers[j].loc);
           markers[i].next_angle_dist = angle_pos(angle_diff(markers[i].angle,markers[j].angle));

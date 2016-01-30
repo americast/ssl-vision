@@ -33,6 +33,7 @@ set (SHARED_SRCS
 
 	${shared_dir}/net/netraw.cpp
 	${shared_dir}/net/robocup_ssl_client.cpp
+	${shared_dir}/net/robocup_ssl_debug_client.cpp
 	${shared_dir}/net/robocup_ssl_server.cpp
 
 	${shared_dir}/util/affinity_manager.cpp
@@ -147,6 +148,7 @@ set (PROTO_FILES
 	messages_robocup_ssl_refbox_log
   messages_robocup_ssl_geometry_legacy
   messages_robocup_ssl_wrapper_legacy
+  sslDebug_Data
 )
 
 set (CC_PROTO)
@@ -158,7 +160,7 @@ foreach (file ${PROTO_FILES})
 	set (proto_file ${file}.proto)
 
 	add_custom_command(OUTPUT ${cc_file} ${h_file}
-			COMMAND protoc --cpp_out=${PROJECT_BINARY_DIR} --proto_path=${PROTO_PATH} ${PROTO_PATH}/${proto_file}
+			COMMAND /usr/bin/protoc --cpp_out=${PROJECT_BINARY_DIR} --proto_path=${PROTO_PATH} ${PROTO_PATH}/${proto_file}
 			DEPENDS ${PROTO_PATH}/${proto_file}
 			VERBATIM
 	)

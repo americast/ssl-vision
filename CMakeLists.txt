@@ -1,6 +1,5 @@
 project(ssl-vision)
 cmake_minimum_required(VERSION 2.6)
-
 #defines
 add_definitions(-D UNIX)
 add_definitions(-D LINUX)
@@ -11,11 +10,12 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set (QT_USE_QTNETWORK true)
 set (QT_USE_QTOPENGL true)
 
-find_package ( Qt4 REQUIRED )
+find_package ( Qt4  4.8.6 COMPONENTS QtCore QtGui QtXml REQUIRED )
 
 include_directories(${PROJECT_BINARY_DIR})
 
 include ( ${QT_USE_FILE} )
+message("${QT_LIBRARIES} >><><><><")
 
 include(src/shared/CMakeLists.txt.inc)
 
@@ -141,18 +141,18 @@ add_definitions(${cc_flags})
 ## build the common code
 add_library(sslvision ${SHARED_MOC_SRCS} ${SHARED_RC_SRCS} ${CC_PROTO} ${SHARED_SRCS})
 add_dependencies(sslvision GenerateProto)
-
-set (libs ${QT_LIBRARIES} dc1394 jpeg png protobuf pthread GL GLU sslvision)
+message("<><> ${CC_PROTO}")
+set (libs ${QT_LIBRARIES} dc1394 jpeg png -lprotobuf pthread GL GLU sslvision)
 
 ## build the main app
 set (target vision)
 add_executable(${target} ${UI_SRCS} ${MOC_SRCS} ${RC_SRCS} ${SRCS})
-target_link_libraries(${target} ${libs})
+target_link_libraries(${target} ${libs} -lpthread -ldc1394 -L/usr/lib/x86_64-linux-gnu/ -lQtCore)
 
 ##build non graphical client
 set (client client)
 add_executable(${client} src/client/main.cpp )
-target_link_libraries(${client} ${libs})
+target_link_libraries(${client} ${libs} -lpthread -ldc1394 -L/usr/lib/x86_64-linux-gnu/ -lQtCore)
 
 ##build logging client
 set (lclient logClient)
@@ -163,7 +163,7 @@ add_executable(${lclient} ${LCLIENT_MOC_SRCS}
 	src/logClient/GraphicsPrimitives.cpp
 	src/logClient/LogControl.cpp
 )
-target_link_libraries(${lclient} ${libs})
+target_link_libraries(${lclient} ${libs} -lpthread -ldc1394 -L/usr/lib/x86_64-linux-gnu/ -lQtCore)
 
 ##build graphical client
 set (gclient graphicalClient)
@@ -172,6 +172,6 @@ add_executable(${gclient} ${GCLIENT_MOC_SRCS}
   src/graphicalClient/soccerview.cpp
   src/graphicalClient/gltext.cpp
 )
-target_link_libraries(${gclient} ${libs})
+target_link_libraries(${gclient} ${libs} -lpthread -ldc1394 -L/usr/lib/x86_64-linux-gnu/ -lQtCore)
 
 

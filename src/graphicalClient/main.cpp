@@ -24,7 +24,7 @@
 #include <QApplication>
 #include "soccerview.h"
 #include "timer.h"
-
+#include "robocup_ssl_debug_client.h"
 GLSoccerView *view;
 
 bool runApp = true;
@@ -36,7 +36,10 @@ protected:
   {
     static const double minDuration = 0.01; //100FPS
     RoboCupSSLClient client;
+    RoboCupSSLDebugClient dclient;
+    dclient.open(false);
     client.open(false);
+    sslDebug_Data dpacket;
     SSL_WrapperPacket packet;
     while(runApp) {
       while (client.receive(packet)) {
@@ -47,6 +50,10 @@ protected:
         if (packet.has_geometry()) {
           view->updateFieldGeometry(packet.geometry().field());
         }
+      }
+      while (dclient.receive(dpacket)) {
+        printf("got a dpacket!\n");
+        view->updateDebugData(dpacket);
       }
       Sleep(minDuration);
     }

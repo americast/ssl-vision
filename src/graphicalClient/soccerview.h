@@ -35,7 +35,8 @@
 #include "geometry.h"
 #include "util.h"
 #include "gltext.h"
-
+#include "robocup_ssl_debug_client.h"
+#include <map>
 #ifndef SOCCERVIEW_H
 #define SOCCERVIEW_H
 
@@ -137,11 +138,18 @@ protected:
   void resizeGL(int width, int height);
   QSize sizeHint () const {return QSize(PreferedWidth,PreferedHeight);}
 
+  // debug stuff
+  std::map<std::string, std::vector<Debug_Line> > debugLines;
+  std::map<std::string, std::vector<Debug_Circle> > debugCircles;
+  void drawDebugLines();
+  void drawDebugCircles();
 public:
   GLSoccerView(QWidget *parent = 0);
   void updateDetection (const SSL_DetectionFrame &detection );
   void updateFieldGeometry (const SSL_GeometryFieldSize &fieldSize );
 
+  // debug function
+  void updateDebugData (const sslDebug_Data &ddata);
 public slots:
   void resetView();
 private slots:

@@ -2190,7 +2190,7 @@
 					true
 				</Var>
 				<Var name="5" type="bool">
-					true
+					false
 				</Var>
 				<Var name="6" type="bool">
 					false
@@ -2226,19 +2226,19 @@
 				4
 			</Var>
 			<Var name="Max Width (pixels)" type="int" minval="" maxval="">
-				100
+				300
 			</Var>
 			<Var name="Min Height (pixels)" type="int" minval="" maxval="">
 				4
 			</Var>
 			<Var name="Max Height (pixels)" type="int" minval="" maxval="">
-				100
+				300
 			</Var>
 			<Var name="Min Area (sq-pixels)" type="int" minval="" maxval="">
 				15
 			</Var>
 			<Var name="Max Area (sq-pixels)" type="int" minval="" maxval="">
-				5000
+				4000
 			</Var>
 			<Var name="Duplicate Merge Distance (mm)" type="int" minval="" maxval="">
 				135
@@ -2249,25 +2249,25 @@
 				4
 			</Var>
 			<Var name="Max Width (pixels)" type="int" minval="" maxval="">
-				50
+				400
 			</Var>
 			<Var name="Min Height (pixels)" type="int" minval="" maxval="">
 				4
 			</Var>
 			<Var name="Max Height (pixels)" type="int" minval="" maxval="">
-				50
+				400
 			</Var>
 			<Var name="Min Area (sq-pixels)" type="int" minval="" maxval="">
 				15
 			</Var>
 			<Var name="Max Area (sq-pixels)" type="int" minval="" maxval="">
-				2500
+				6000
 			</Var>
 			<Var name="Max Num Markers To Detect" type="int" minval="" maxval="">
 				16
 			</Var>
 			<Var name="Max Query Distance" type="double" minval="" maxval="">
-				50.000000
+				20.000000
 			</Var>
 		</Var>
 		<Var name="Histogram Settings" type="list">
@@ -2323,7 +2323,7 @@
 			</Var>
 		</Var>
 		<Var name="Use Heights from Marker Image" type="bool">
-			false
+			true
 		</Var>
 	</Var>
 	<Var name="Odens" type="list">

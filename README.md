@@ -1,1 +1,2 @@
-# ssl-vision\n fork of ssl-vision
+# ssl-vision
+fork of ssl-vision. has working settings for ssl.

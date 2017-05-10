@@ -1,6 +1,6 @@
 #include "camera_calibration.h"
-#include <Eigen/Cholesky>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Cholesky>
+#include <eigen3/Eigen/Dense>
 #include <iostream>
 #include <algorithm>
 #include <limits>
@@ -575,7 +575,7 @@ void CameraParameters::calibrate(
     // Due to an API change we need to check for
     // the right call at compile time
 #ifdef EIGEN_WORLD_VERSION
-    alpha.llt().solve(-beta, &new_p);
+    new_p=alpha.llt().solve(-beta);
 #else
     Eigen::Cholesky<Eigen::MatrixXd> c(alpha);
     new_p = c.solve(-beta);
